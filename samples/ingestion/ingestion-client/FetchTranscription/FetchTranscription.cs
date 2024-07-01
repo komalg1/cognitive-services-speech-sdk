@@ -10,6 +10,7 @@ namespace FetchTranscription
     using Connector;
 
     using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
 
     public class FetchTranscription
@@ -39,7 +40,7 @@ namespace FetchTranscription
 
             var serviceBusMessage = TranscriptionStartedMessage.DeserializeMessage(message);
 
-            var transcriptionProcessor = new TranscriptionProcessor(this.serviceProvider);
+            var transcriptionProcessor = this.serviceProvider.GetRequiredService<TranscriptionProcessor>(); // new TranscriptionProcessor(this.serviceProvider);
 
             await transcriptionProcessor.ProcessTranscriptionJobAsync(serviceBusMessage, this.serviceProvider,  log).ConfigureAwait(false);
         }

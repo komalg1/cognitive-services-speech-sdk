@@ -10,7 +10,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 namespace FetchTranscription
 {
     using System;
-
+    using Connector;
     using Connector.Database;
 
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
@@ -22,6 +22,8 @@ namespace FetchTranscription
         public override void Configure(IFunctionsHostBuilder builder)
         {
             _ = builder ?? throw new ArgumentNullException(nameof(builder));
+
+            builder.Services.AddTransient<ITranscriptionToHtml, TranscriptionToHtml>();
 
             if (FetchTranscriptionEnvironmentVariables.UseSqlDatabase)
             {

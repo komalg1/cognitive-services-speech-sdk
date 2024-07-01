@@ -10,9 +10,9 @@ namespace Connector
     using System.Linq;
     using System.Text;
 
-    public static class TranscriptionToHtml
+    public class TranscriptionToHtml : ITranscriptionToHtml
     {
-        public static string ToHtml(SpeechTranscript transcription, string filename)
+        public string ToHtml(SpeechTranscript transcription, string filename)
         {
             if (transcription == null)
             {

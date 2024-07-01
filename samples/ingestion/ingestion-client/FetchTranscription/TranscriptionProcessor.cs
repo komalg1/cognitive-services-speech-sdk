@@ -43,6 +43,9 @@ namespace FetchTranscription
 
         private readonly IServiceProvider serviceProvider;
 
+        // private readonly IngestionClientDbContext databaseContext;
+        private readonly ITranscriptionToHtml transcriptionToHtml;
+
         private readonly IngestionClientDbContext databaseContext;
 
         #pragma warning disable CA1810
@@ -56,10 +59,11 @@ namespace FetchTranscription
         }
         #pragma warning restore CA1810
 
-        public TranscriptionProcessor(IServiceProvider serviceProvider)
+        public TranscriptionProcessor(IngestionClientDbContext databaseContext, ITranscriptionToHtml transcriptionToHtml)
         {
-            this.serviceProvider = serviceProvider;
-
+            // this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            this.transcriptionToHtml = transcriptionToHtml ?? throw new ArgumentNullException(nameof(transcriptionToHtml));
+            this.databaseContext = databaseContext ?? throw new ArgumentNullException(nameof(databaseContext));
             if (FetchTranscriptionEnvironmentVariables.UseSqlDatabase)
             {
                 this.databaseContext = this.serviceProvider.GetRequiredService<IngestionClientDbContext>();
@@ -467,7 +471,7 @@ namespace FetchTranscription
                 {
                     var htmlContainer = FetchTranscriptionEnvironmentVariables.HtmlResultOutputContainer;
                     var htmlFileName = $"{fileName}.html";
-                    var displayResults = TranscriptionToHtml.ToHtml(speechTranscript, jobName);
+                    var displayResults = this.transcriptionToHtml.ToHtml(speechTranscript, jobName);
                     await StorageConnectorInstance.WriteTextFileToBlobAsync(displayResults, htmlContainer, htmlFileName, log).ConfigureAwait(false);
 
                     if (FetchTranscriptionEnvironmentVariables.CreateConsolidatedOutputFiles)

@@ -23,10 +23,13 @@ namespace Tests
 
         private static Mock<ILogger> Logger { get; set; }
 
+        private Mock<ITranscriptionToHtml> TranscriptionToHtml { get; set; }
+
         [TestInitialize]
         public virtual void TestInitialize()
         {
             Logger = new Mock<ILogger>();
+            this.TranscriptionToHtml = new Mock<ITranscriptionToHtml>();
         }
 
         [TestMethod]
@@ -74,7 +77,7 @@ namespace Tests
             var body = File.ReadAllText(@"TestFiles/transcriptSample.json");
             var transcription = JsonConvert.DeserializeObject<SpeechTranscript>(body);
 
-            var html = TranscriptionToHtml.ToHtml(transcription, "testfile");
+            var html = this.TranscriptionToHtml.Object.ToHtml(transcription, "testfile");
             Assert.IsTrue(!string.IsNullOrEmpty(html));
             Assert.IsTrue(html.StartsWith("<html lang=", StringComparison.OrdinalIgnoreCase));
         }
