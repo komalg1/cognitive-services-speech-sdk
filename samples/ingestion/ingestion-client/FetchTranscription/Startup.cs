@@ -11,6 +11,7 @@ namespace FetchTranscription
 {
     using System;
 
+    using Azure.Messaging.ServiceBus;
     using Azure.Storage;
     using Azure.Storage.Blobs;
 
@@ -33,6 +34,9 @@ namespace FetchTranscription
                   options => SqlServerDbContextOptionsExtensions.UseSqlServer(options, FetchTranscriptionEnvironmentVariables.DatabaseConnectionString));
             }
 
+            var startServiceBusConnectionString = FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString;
+            var fetchServiceBusConnectionString = FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString;
+            var completedServiceBusConnectionString = FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString;
             var storageConnectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage");
             var blobServiceClient = new BlobServiceClient(storageConnectionString);
             var storageCredential = new StorageSharedKeyCredential(
@@ -43,6 +47,36 @@ namespace FetchTranscription
             builder.Services.AddSingleton(storageCredential);
 
             builder.Services.AddTransient<IStorageConnector, StorageConnector>();
+            builder.Services.AddSingleton(provider =>
+            {
+                var client = provider.GetRequiredService<ServiceBusClient>();
+                var connectionString = FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString;
+                var entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
+                return client.CreateSender(entityPath);
+            });
+
+            builder.Services.AddSingleton(provider =>
+            {
+                var client = provider.GetRequiredService<ServiceBusClient>();
+                var connectionString = FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString;
+                Console.WriteLine($"EntityPath: {ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath}");
+                var entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
+
+                // ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString).EntityPath
+                return client.CreateSender(entityPath);
+            });
+
+            if (!string.IsNullOrEmpty(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString))
+            {
+                // builder.Services.AddSingleton(new ServiceBusClient(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString));
+                builder.Services.AddSingleton(provider =>
+                {
+                    var client = provider.GetRequiredService<ServiceBusClient>();
+                    var connectionString = FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString;
+                    var entityPath = ServiceBusConnectionStringProperties.Parse(connectionString).EntityPath;
+                    return client.CreateSender(entityPath);
+                });
+            }
         }
 
         private static string GetValueFromConnectionString(string key, string connectionString)

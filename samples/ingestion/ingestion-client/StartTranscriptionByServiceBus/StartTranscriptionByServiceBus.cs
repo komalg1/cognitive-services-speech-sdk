@@ -10,17 +10,26 @@ namespace StartTranscription
     using Azure.Messaging.ServiceBus;
 
     using Connector;
+
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
+
     using StartTranscriptionByTimer;
 
     public class StartTranscriptionByServiceBus
     {
         private readonly IStorageConnector storageConnector;
+        private readonly ServiceBusClient startServiceBusClient;
+        private readonly ServiceBusClient fetchServiceBusClient;
 
-        public StartTranscriptionByServiceBus(IStorageConnector storageConnector)
+        private readonly IConfig config;
+
+        public StartTranscriptionByServiceBus(IStorageConnector storageConnector, ServiceBusClient startServiceBusClient, ServiceBusClient fetchServiceBusClient, IConfig config)
         {
             this.storageConnector = storageConnector;
+            this.startServiceBusClient = startServiceBusClient;
+            this.fetchServiceBusClient = fetchServiceBusClient;
+            this.config = config;
         }
 
         [FunctionName("StartTranscriptionByServiceBus")]
@@ -39,7 +48,7 @@ namespace StartTranscription
             log.LogInformation($"C# ServiceBus queue trigger function processed message: {message.Subject}");
             log.LogInformation($"Received message: SequenceNumber:{message.SequenceNumber} Body:{message.Body}");
 
-            var transcriptionHelper = new StartTranscriptionHelper(log, this.storageConnector);
+            var transcriptionHelper = new StartTranscriptionHelper(log, this.storageConnector, this.startServiceBusClient, this.fetchServiceBusClient, this.config);
 
             if (message == null || !transcriptionHelper.IsValidServiceBusMessage(message))
             {

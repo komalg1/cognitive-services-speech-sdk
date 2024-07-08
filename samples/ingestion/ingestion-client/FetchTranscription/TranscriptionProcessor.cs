@@ -27,36 +27,42 @@ namespace FetchTranscription
 
     public class TranscriptionProcessor
     {
-        private static readonly ServiceBusClient StartServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString);
+        // private static readonly ServiceBusClient StartServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString);
 
-        private static readonly ServiceBusSender StartServiceBusSender = StartServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString).EntityPath);
+        // private static readonly ServiceBusSender StartServiceBusSender = StartServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString).EntityPath);
 
-        private static readonly ServiceBusClient FetchServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString);
+        // private static readonly ServiceBusClient FetchServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString);
 
-        private static readonly ServiceBusSender FetchServiceBusSender = FetchServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString).EntityPath);
+        // private static readonly ServiceBusSender FetchServiceBusSender = FetchServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString).EntityPath);
 
-        private static readonly ServiceBusClient CompletedServiceBusClient;
+        // private static readonly ServiceBusClient CompletedServiceBusClient;
 
-        private static readonly ServiceBusSender CompletedServiceBusSender;
-
+        // private static readonly ServiceBusSender CompletedServiceBusSender;
         private readonly IServiceProvider serviceProvider;
 
         private readonly IngestionClientDbContext databaseContext;
 
         private readonly IStorageConnector storageConnector;
 
+        private readonly ServiceBusSender startServiceBusSender;
+
+        private readonly ServiceBusSender fetchServiceBusSender;
+
+        private readonly ServiceBusSender completedServiceBusSender;
+
         #pragma warning disable CA1810
-        static TranscriptionProcessor()
-        {
-            if (!string.IsNullOrEmpty(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString))
-            {
-                CompletedServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString);
-                CompletedServiceBusSender = CompletedServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString).EntityPath);
-            }
-        }
+
+        // static TranscriptionProcessor()
+        // {
+        //     if (!string.IsNullOrEmpty(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString))
+        //     {
+        //         CompletedServiceBusClient = new ServiceBusClient(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString);
+        //         CompletedServiceBusSender = CompletedServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString).EntityPath);
+        //     }
+        // }
         #pragma warning restore CA1810
 
-        public TranscriptionProcessor(IServiceProvider serviceProvider, IStorageConnector storageConnector)
+        public TranscriptionProcessor(IServiceProvider serviceProvider, IStorageConnector storageConnector, ServiceBusSender startServiceBusSender, ServiceBusSender fetchServiceBusSender, ServiceBusSender completedServiceBusSender)
         {
             this.serviceProvider = serviceProvider;
             this.storageConnector = storageConnector;
@@ -65,6 +71,16 @@ namespace FetchTranscription
             {
                 this.databaseContext = this.serviceProvider.GetRequiredService<IngestionClientDbContext>();
             }
+
+            this.startServiceBusSender = startServiceBusSender;
+            this.fetchServiceBusSender = fetchServiceBusSender;
+            this.completedServiceBusSender = completedServiceBusSender;
+
+            // if (!string.IsNullOrEmpty(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString))
+            // {
+            //     this.completedServiceBusClient = completedServiceBusClient;
+            //     var completedServiceBusSender = this.completedServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString).EntityPath);
+            // }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catch general exception to allow manual retrying.")]
@@ -83,6 +99,7 @@ namespace FetchTranscription
             var messageDelayTime = GetMessageDelayTime(serviceBusMessage.PollingCounter);
             serviceBusMessage.PollingCounter += 1;
 
+            // var fetchServiceBusSender = this.fetchServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.FetchTranscriptionServiceBusConnectionString).EntityPath);
             try
             {
                 var transcription = await BatchClient.GetTranscriptionAsync(transcriptionLocation, subscriptionKey).ConfigureAwait(false);
@@ -97,11 +114,11 @@ namespace FetchTranscription
                         break;
                     case "Running":
                         log.LogInformation($"Transcription running, polling again after {messageDelayTime.TotalMinutes} minutes.");
-                        await ServiceBusUtilities.SendServiceBusMessageAsync(FetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
+                        await ServiceBusUtilities.SendServiceBusMessageAsync(this.fetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
                         break;
                     case "NotStarted":
                         log.LogInformation($"Transcription not started, polling again after {messageDelayTime.TotalMinutes} minutes.");
-                        await ServiceBusUtilities.SendServiceBusMessageAsync(FetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
+                        await ServiceBusUtilities.SendServiceBusMessageAsync(this.fetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
                         break;
                 }
             }
@@ -186,6 +203,7 @@ namespace FetchTranscription
             var safeErrorMessage = transcription?.Properties?.Error?.Message ?? "unknown";
             var logMessage = $"Got failed transcription for job {jobName} with error {safeErrorMessage} (Error code: {safeErrorCode}).";
 
+            // var startServiceBusSender = this.startServiceBusClient.CreateSender(ServiceBusConnectionStringProperties.Parse(FetchTranscriptionEnvironmentVariables.StartTranscriptionServiceBusConnectionString).EntityPath);
             log.LogInformation(logMessage);
 
             var transcriptionFiles = await BatchClient.GetTranscriptionFilesAsync(transcriptionLocation, subscriptionKey).ConfigureAwait(false);
@@ -221,7 +239,7 @@ namespace FetchTranscription
                     };
 
                     var audioFileMessage = new Azure.Messaging.ServiceBus.ServiceBusMessage(JsonConvert.SerializeObject(serviceBusMessage));
-                    await ServiceBusUtilities.SendServiceBusMessageAsync(StartServiceBusSender, audioFileMessage, log, TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                    await ServiceBusUtilities.SendServiceBusMessageAsync(this.startServiceBusSender, audioFileMessage, log, TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -284,7 +302,7 @@ namespace FetchTranscription
             if (message.FailedExecutionCounter <= FetchTranscriptionEnvironmentVariables.RetryLimit || isThrottled)
             {
                 log.LogInformation("Retrying..");
-                await ServiceBusUtilities.SendServiceBusMessageAsync(FetchServiceBusSender, message.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
+                await ServiceBusUtilities.SendServiceBusMessageAsync(this.fetchServiceBusSender, message.CreateMessageString(), log, messageDelayTime).ConfigureAwait(false);
             }
             else
             {
@@ -342,7 +360,7 @@ namespace FetchTranscription
             {
                 // If transcription analytics request is still running, re-queue message and get status again after X minutes:
                 log.LogInformation($"Transcription analytics requests still running for job {jobName} - re-queueing message.");
-                await ServiceBusUtilities.SendServiceBusMessageAsync(FetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, GetMessageDelayTime(serviceBusMessage.PollingCounter)).ConfigureAwait(false);
+                await ServiceBusUtilities.SendServiceBusMessageAsync(this.fetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, GetMessageDelayTime(serviceBusMessage.PollingCounter)).ConfigureAwait(false);
                 return;
             }
 
@@ -418,7 +436,7 @@ namespace FetchTranscription
                 log.LogInformation($"Added text analytics requests to service bus message - re-queueing message.");
 
                 // Poll for first time with TA request after 1 minute
-                await ServiceBusUtilities.SendServiceBusMessageAsync(FetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                await ServiceBusUtilities.SendServiceBusMessageAsync(this.fetchServiceBusSender, serviceBusMessage.CreateMessageString(), log, TimeSpan.FromMinutes(1)).ConfigureAwait(false);
                 return;
             }
 
@@ -511,7 +529,7 @@ namespace FetchTranscription
 
             if (!string.IsNullOrEmpty(FetchTranscriptionEnvironmentVariables.CompletedServiceBusConnectionString))
             {
-                await ServiceBusUtilities.SendServiceBusMessageAsync(CompletedServiceBusSender, JsonConvert.SerializeObject(completedMessages), log, GetMessageDelayTime(serviceBusMessage.PollingCounter)).ConfigureAwait(false);
+                await ServiceBusUtilities.SendServiceBusMessageAsync(this.completedServiceBusSender, JsonConvert.SerializeObject(completedMessages), log, GetMessageDelayTime(serviceBusMessage.PollingCounter)).ConfigureAwait(false);
             }
 
             var generalErrors = generalErrorsStringBuilder.ToString();

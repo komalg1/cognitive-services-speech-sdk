@@ -7,6 +7,8 @@ namespace FetchTranscription
 {
     using System;
     using System.Threading.Tasks;
+
+    using Azure.Messaging.ServiceBus;
     using Connector;
 
     using Microsoft.Azure.WebJobs;
@@ -16,11 +18,17 @@ namespace FetchTranscription
     {
         private readonly IServiceProvider serviceProvider;
         private readonly IStorageConnector storageConnector;
+        private readonly ServiceBusSender startServiceBusSender;
+        private readonly ServiceBusSender fetchServiceBusSender;
+        private readonly ServiceBusSender completedServiceBusSender;
 
-        public FetchTranscription(IServiceProvider serviceProvider, IStorageConnector storageConnector)
+        public FetchTranscription(IServiceProvider serviceProvider, IStorageConnector storageConnector, ServiceBusSender startServiceBusSender, ServiceBusSender fetchServiceBusSender, ServiceBusSender completedServiceBusSender)
         {
             this.serviceProvider = serviceProvider;
             this.storageConnector = storageConnector;
+            this.startServiceBusSender = startServiceBusSender;
+            this.fetchServiceBusSender = fetchServiceBusSender;
+            this.completedServiceBusSender = completedServiceBusSender;
         }
 
         [FunctionName("FetchTranscription")]
@@ -41,7 +49,7 @@ namespace FetchTranscription
 
             var serviceBusMessage = TranscriptionStartedMessage.DeserializeMessage(message);
 
-            var transcriptionProcessor = new TranscriptionProcessor(this.serviceProvider, this.storageConnector);
+            var transcriptionProcessor = new TranscriptionProcessor(this.serviceProvider, this.storageConnector, this.startServiceBusSender, this.fetchServiceBusSender, this.completedServiceBusSender);
 
             await transcriptionProcessor.ProcessTranscriptionJobAsync(serviceBusMessage, this.serviceProvider,  log).ConfigureAwait(false);
         }
