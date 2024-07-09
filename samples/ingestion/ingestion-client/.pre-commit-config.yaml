@@ -4,6 +4,15 @@ repos:
       - id: bicep
         name: bicep
         description: "Lint and build Bicep files"
-        entry: entry: bash -c 'for file in $(git diff --cached --name-only --diff-filter=ACM | grep "\.bicep$"); do echo "Building $file..."; bicep build "$file" -o "${file%.bicep}.json" || exit 1; git add "${file%.bicep}.json"; done'
+        entry: |
+          bash -c '
+          echo -e "\e[34m$@\e[0m" || true;
+          az bicep version 2>/dev/null || az bicep install;
+          for file in $(git diff --cached --name-only --diff-filter=ACM | grep "\.bicep$"); do
+            echo "Building $file...";
+            az bicep build -f "$file" -o "${file%.bicep}.json" || exit 1;
+            git add "${file%.bicep}.json";
+          done
+          '
         language: system
         files: ^infra/.*$
