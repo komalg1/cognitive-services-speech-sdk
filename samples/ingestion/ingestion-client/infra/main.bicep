@@ -45,7 +45,7 @@ param Locale string = 'en-US | English (United States)'
 @description('The id of the custom model for transcription. If empty, the base model will be selected.')
 param CustomModelId string = ''
 
-@description('The key for the Azure Speech Services subscription.')
+@description('The)111 key for the Azure Speech Services subscription.')
 @secure()
 param AzureSpeechServicesKey string
 
