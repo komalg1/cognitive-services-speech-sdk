@@ -6,7 +6,7 @@ repos:
         description: Lint and build Bicep files
         entry: ./scripts/generate_arm_templates.sh
         language: script
-        files: \.bicep$
+        files: infra/main.bicep
         require_serial: true
         args: # Bicep files that we want to generate ARM templates from
           - -f=./infra/main.bicep
