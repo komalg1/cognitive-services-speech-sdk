@@ -14,7 +14,8 @@
                 "ms-azuretools.vscode-azurefunctions",
                 "editorconfig.editorconfig",
                 "ms-azuretools.vscode-bicep",
-                "ms-dotnettools.vscode-dotnet-runtime"
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "elagil.pre-commit-helper"
             ],
             "settings": {
                 "omnisharp.enableRoslynAnalyzers": true,
