@@ -45,7 +45,7 @@ param Locale string = 'en-US | English (United States)'
 @description('The id of the custom model for transcription. If empty, the base model will be selected.')
 param CustomModelId string = ''
 
-@description('The)111 key for the Azure Speech Services subscription.')
+@description('The key for the Azure Speech Services subscription.')
 @secure()
 param AzureSpeechServicesKey string
 
@@ -136,10 +136,10 @@ param SqlAdministratorLogin string = ''
 @secure()
 param SqlAdministratorLoginPassword string = ''
 
-@description('Id_test_11 that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id.')
+@description('Id that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id.')
 param DeploymentId string = utcNow()
 
-@description('The_test_connec connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent.')
+@description('The connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent.')
 @secure()
 param CompletedServiceBusConnectionString string = ''
 

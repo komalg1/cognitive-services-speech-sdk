@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.28.1.47646",
-      "templateHash": "8591708785342125611"
+      "templateHash": "14165381440993746561"
     }
   },
   "parameters": {
@@ -68,7 +68,7 @@
     "AzureSpeechServicesKey": {
       "type": "securestring",
       "metadata": {
-        "description": "The)111 key for the Azure Speech Services subscription."
+        "description": "The key for the Azure Speech Services subscription."
       }
     },
     "AzureSpeechServicesRegion": {
@@ -212,14 +212,14 @@
       "type": "string",
       "defaultValue": "[utcNow()]",
       "metadata": {
-        "description": "Id_test_11 that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id."
+        "description": "Id that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id."
       }
     },
     "CompletedServiceBusConnectionString": {
       "type": "securestring",
       "defaultValue": "",
       "metadata": {
-        "description": "The_test_connec connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent."
+        "description": "The connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent."
       }
     }
   },
