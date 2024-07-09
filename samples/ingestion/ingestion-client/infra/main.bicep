@@ -136,10 +136,10 @@ param SqlAdministratorLogin string = ''
 @secure()
 param SqlAdministratorLoginPassword string = ''
 
-@description('Id121 that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id.')
+@description('Id_test_11 that will be suffixed to all created resources to identify resources of a certain deployment. Leave as is to use timestamp as deployment id.')
 param DeploymentId string = utcNow()
 
-@description('The connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent.')
+@description('The_test_connec connection string for the Service Bus Queue where you want to receive the notification of completion of the transcription for each audio file. If left empty, no completion notification will be sent.')
 @secure()
 param CompletedServiceBusConnectionString string = ''
 
