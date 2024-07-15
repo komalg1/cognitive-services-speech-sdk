@@ -3,7 +3,7 @@ name: Bicep Build
 on:
   push:
     branches: ['main', 'master', '*']
-    paths: ['samples/ingestion/ingestion-client/**',]
+    paths: ['samples/ingestion/ingestion-client/infra/main.bicep']
 
 jobs:
   build:
