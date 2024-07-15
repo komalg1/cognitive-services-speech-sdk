@@ -14,23 +14,21 @@ jobs:
         run: |
           curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
           az --version
+
       - name: Install Bicep CLI
         run: |
           az bicep install
           az bicep upgrade
-      - name: Convert Bicep to ARM Templates
+
+      - name: Convert Bicep to ARM Template
         run: |
-          find ./samples/ingestion/ingestion-client -name '*.bicep' -exec sh -c 'az bicep build --file {} --outfile ${0%.bicep}.json' {} \;
-      - name: Commit and Push JSON Templates
+          az bicep build --file ./samples/ingestion/ingestion-client/infra/main.bicep --outfile ./samples/ingestion/ingestion-client/infra/generated_main.json
+
+      - name: Validate ARM Template
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add ./samples/ingestion/ingestion-client/infra/*.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Auto-generated ARM templates from Bicep files"
-            git push origin ${{ github.ref }}
+          if ! cmp -s ./samples/ingestion/ingestion-client/infra/main.json ./samples/ingestion/ingestion-client/infra/generated_main.json; then
+            echo "Generated ARM template does not match the existing main.json. Please update main.json accordingly." >&2
+            exit 1
           fi
   build:
     needs: convert_bicep
