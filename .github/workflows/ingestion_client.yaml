@@ -6,6 +6,29 @@ on:
       - completed
 
 jobs:
+  convert_bicep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          az --version
+      - name: Install Bicep CLI
+        run: |
+          az bicep install
+          az bicep upgrade
+      - name: Convert Bicep to ARM Templates
+        run: |
+          find ./samples/ingestion/ingestion-client -name '*.bicep' -exec sh -c 'az bicep build --file {} --out-file ${0%.bicep}.json' {} \;
+      - name: Commit and Push JSON Templates
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add ./samples/ingestion/ingestion-client/infra/*.json
+          git commit -m "Auto-generated ARM templates from Bicep files"
+          git push origin ${{ github.ref }}
   build:
     runs-on: ubuntu-latest
     outputs:
