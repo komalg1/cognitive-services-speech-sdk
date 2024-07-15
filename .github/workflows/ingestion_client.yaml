@@ -43,7 +43,7 @@ jobs:
         id: get_release_versions
         run: |
           set -u -e -o pipefail
-          version=$(cat ./samples/ingestion/ingestion-client/infra/main.json | jq -r .variables.Version)
+          version=$(grep '^var Version' ./samples/ingestion/ingestion-client/infra/main.bicep | awk -F "= '" '{print $2}' | sed "s/'//g")
           echo version=$version >> "$GITHUB_OUTPUT"
           echo "Batch template: ${version}"
 
