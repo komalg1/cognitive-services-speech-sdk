@@ -1,4 +1,4 @@
-@description('testbicep The name of the storage account. It must be unique across all existing storage account names in Azure, between 3 and 24 characters long, and can contain only lowercase letters and numbers.')
+@description('testbicep_123 The name of the storage account. It must be unique across all existing storage account names in Azure, between 3 and 24 characters long, and can contain only lowercase letters and numbers.')
 param StorageAccount string
 
 @allowed([
