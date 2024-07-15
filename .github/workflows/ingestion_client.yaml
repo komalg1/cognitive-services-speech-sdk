@@ -20,7 +20,7 @@ jobs:
           az bicep upgrade
       - name: Convert Bicep to ARM Templates
         run: |
-          find ./samples/ingestion/ingestion-client -name '*.bicep' -exec sh -c 'az bicep build --file {} --out-file ${0%.bicep}.json' {} \;
+          find ./samples/ingestion/ingestion-client -name '*.bicep' -exec sh -c 'az bicep build --file {} --outfile ${0%.bicep}.json' {} \;
       - name: Commit and Push JSON Templates
         run: |
           git config --global user.name 'github-actions[bot]'
@@ -29,6 +29,7 @@ jobs:
           git commit -m "Auto-generated ARM templates from Bicep files"
           git push origin ${{ github.ref }}
   build:
+    needs: convert_bicep
     runs-on: ubuntu-latest
     outputs:
       releaseversionoutput: ${{ steps.get_release_versions.outputs.version }}
