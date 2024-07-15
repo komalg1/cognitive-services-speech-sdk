@@ -1,5 +1,9 @@
 name: Build Ingestion Client Binaries
-
+on:
+  workflow_run:
+    workflows: ["Bicep Build"]
+    types:
+      - completed
 on:
   push:
     branches: ['main', 'master', '*']
