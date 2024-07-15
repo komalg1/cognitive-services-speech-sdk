@@ -1,9 +1,8 @@
 name: Build Ingestion Client Binaries
 on:
-  workflow_run:
-    workflows: ["Bicep Build"]
-    types:
-      - completed
+  push:
+    branches: ['main', 'master', '*']
+    paths: ['samples/ingestion/ingestion-client/**', '.github/workflows/ingestion_client.yaml']
 
 jobs:
   convert_bicep:
