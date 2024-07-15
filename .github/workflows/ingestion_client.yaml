@@ -1,7 +1,7 @@
 name: Build Ingestion Client Binaries
 on:
   push:
-    branches: ['main', 'master', '*']
+    branches: ['main', 'master', 'komal/testbicep' ,'*']
     paths: ['samples/ingestion/ingestion-client/**', '.github/workflows/ingestion_client.yaml']
 
 jobs:
