@@ -44,6 +44,9 @@ jobs:
       - name: Install coverlet
         run: dotnet tool install --global coverlet.console
 
+      - name: Install reportgenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Run Unit Tests and Collect Coverage
         run: |
           dotnet test samples/ingestion/ingestion-client --configuration Release --no-build --collect:"XPlat Code Coverage"
