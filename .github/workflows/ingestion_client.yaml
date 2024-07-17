@@ -57,7 +57,7 @@ jobs:
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: ./samples/ingestion/ingestion-client/Tests/**/coverage.cobertura.xml
+          filename: ./samples/ingestion/ingestion-client/Tests/coverage/**/coverage.cobertura.xml
           badge: true
           format: 'markdown'
           output: 'both'
