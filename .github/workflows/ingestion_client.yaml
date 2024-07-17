@@ -44,16 +44,20 @@ jobs:
       - name: Install coverlet
         run: dotnet tool install --global coverlet.console
 
+      - name: Install reportgenerator
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
       - name: Run Unit Tests and Collect Coverage
         run: |
           dotnet test ./samples/ingestion/ingestion-client/Tests --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger trx --results-directory ./samples/ingestion/ingestion-client/Tests/coverage
+          reportgenerator -reports:./samples/ingestion/ingestion-client/Tests/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
         env:
           PATH: $PATH:/home/runner/.dotnet/tools
 
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: ./samples/ingestion/ingestion-client/Tests/coverage/*/coverage.cobertura.xml
+          filename: './samples/ingestion/ingestion-client/Tests/**/coverage.cobertura.xml'
           badge: true
           format: 'markdown'
           output: 'both'
