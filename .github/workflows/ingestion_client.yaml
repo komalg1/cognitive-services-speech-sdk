@@ -49,8 +49,8 @@ jobs:
 
       - name: Run Unit Tests and Collect Coverage
         run: |
-          dotnet test samples/ingestion/ingestion-client --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
-          reportgenerator -reports:./samples/ingestion/ingestion-client/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
+          dotnet test ./samples/ingestion/ingestion-client/Tests --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
+          reportgenerator -reports:./samples/ingestion/ingestion-client/Tests/**/coverage.cobertura.xml -targetdir:coveragereport -reporttypes:Html
         env:
           PATH: $PATH:/home/runner/.dotnet/tools
 
