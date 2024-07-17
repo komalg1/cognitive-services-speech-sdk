@@ -2,10 +2,10 @@ name: Build Ingestion Client Binaries
 
 on:
   push:
-    branches: ['main', 'master', 'komal/codecoverage' ,'*']
+    branches: ['main', 'master', '*']
     paths: ['samples/ingestion/ingestion-client/**', '.github/workflows/ingestion_client.yaml']
   pull_request:
-    branches: ['main', 'master', 'komal/codecoverage' ,'*']
+    branches: ['main', 'master','*']
     paths: ['samples/ingestion/ingestion-client/**', '.github/workflows/ingestion_client.yaml']
 
 jobs:
